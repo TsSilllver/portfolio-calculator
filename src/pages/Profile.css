@@ -73,3 +73,79 @@
   .ph-row svg, .ph-price { display: none; }
   .profile-extra-grid { grid-template-columns: 1fr; }
 }
+
+/* ... старые стили ... */
+
+/* Редактирование био */
+.profile-bio-wrapper {
+  margin-bottom: 12px;
+  max-width: 500px;
+}
+
+.bio-edit-mode textarea {
+  width: 100%;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  padding: 8px 12px;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-family: var(--font-sans);
+  resize: vertical;
+  outline: none;
+  margin-bottom: 8px;
+}
+
+.bio-save-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.bio-edit-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+.bio-edit-btn:hover { color: var(--accent); }
+
+/* Сетка профиля */
+.profile-main-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+/* Круговая диаграмма */
+.profile-pie-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.pie-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 12px;
+}
+
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; }
+.legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+.legend-label { color: var(--text-secondary); }
+.legend-value { font-family: var(--font-mono); color: var(--text-primary); }
+
+@media (max-width: 768px) {
+  .profile-main-grid { grid-template-columns: 1fr; }
+}

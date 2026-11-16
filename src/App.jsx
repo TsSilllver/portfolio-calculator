@@ -12,8 +12,13 @@ import { DEMO_PORTFOLIO, DEMO_HOLDINGS } from './data/demoData'
 import './App.css'
 
 export default function App() {
-  const { user, loading, saveUser, updateUser, logout } = useUser()
+  // Достаем из хука все нужные функции, включая togglePinTicker
+  const { user, loading, saveUser, updateUser, togglePinTicker, logout } = useUser()
+  
+  // Стартовая страница - "Главная" (Home)
   const [page, setPage] = useState('home')
+  
+  // Стейт портфеля (пока демо, позже заменим на реальные данные)
   const [portfolio, setPortfolio] = useState({
     tickers: DEMO_PORTFOLIO.tickers,
     weights: DEMO_PORTFOLIO.weights,
@@ -22,16 +27,46 @@ export default function App() {
     isDemo: true,
   })
 
-  if (loading) return <div style={{ minHeight: '100vh', background: 'var(--bg-primary)' }} />
-  if (!user) return <Onboarding onComplete={saveUser} />
+  // Пока грузится user из localStorage - показываем пустой экран (чтобы не было мигания)
+  if (loading) {
+    return <div style={{ minHeight: '100vh', background: 'var(--bg-primary)' }} />
+  }
+
+  // Если пользователя нет - показываем форму регистрации
+  if (!user) {
+    return <Onboarding onComplete={saveUser} />
+  }
 
   return (
     <Layout page={page} onNavigate={setPage} user={user}>
-      {page === 'home' && <Home />}
-      {page === 'dashboard' && <Dashboard portfolio={portfolio} onEdit={() => setPage('assets')} />}
-      {page === 'assets' && <Setup portfolio={portfolio} onChange={setPortfolio} onBack={() => setPage('dashboard')} />}
+      {/* Главная - терминал с акциями */}
+      {page === 'home' && (
+        <Home user={user} togglePinTicker={togglePinTicker} />
+      )}
+      
+      {/* Обзор портфеля */}
+      {page === 'dashboard' && (
+        <Dashboard portfolio={portfolio} onEdit={() => setPage('assets')} />
+      )}
+      
+      {/* Управление активами */}
+      {page === 'assets' && (
+        <Setup
+          portfolio={portfolio}
+          onChange={setPortfolio}
+          onBack={() => setPage('dashboard')}
+        />
+      )}
+      
+      {/* История расчетов */}
       {page === 'history' && <History />}
-      {page === 'profile' && <Profile user={user} onUpdateUser={updateUser} onLogout={logout} />}
+      
+      {/* Профиль (передаем функцию обновления и выхода) */}
+      {page === 'profile' && (
+        <Profile user={user} onUpdateUser={updateUser} onLogout={logout} />
+      )}
+      
+      {/* ИИ-Помощник */}
       {page === 'chat' && <Chat />}
     </Layout>
   )

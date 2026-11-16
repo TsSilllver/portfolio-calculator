@@ -1,0 +1,21 @@
+.widget-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(2, minmax(300px, 1fr));
+  gap: 16px;
+  min-height: 70vh;
+}
+
+@media (max-width: 1024px) {
+  .widget-grid {
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: auto;
+  }
+}
+
+@media (max-width: 640px) {
+  .widget-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+  }
+}

@@ -23,8 +23,9 @@ export function useUser() {
       ...userData,
       joined: new Date().toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' }),
       balance: 128453.72,
-      avatar: null, // base64 или null — если null, показываем букву
-      riskProfile: 'Умеренный', // заполнится позже при подключении
+      avatar: null,
+      riskProfile: 'Умеренный',
+      pinnedTickers: ['TSLA', 'AAPL'], // По умолчанию закрепляем две акции
       stats: {
         totalReturn: 28.45,
         bestTrade: 142.8,
@@ -45,10 +46,24 @@ export function useUser() {
     return updated
   }
 
+  // Функция для закрепления/открепления акции
+  const togglePinTicker = (ticker) => {
+    if (!user) return
+    const current = user.pinnedTickers || []
+    let updated
+    if (current.includes(ticker)) {
+      updated = current.filter(t => t !== ticker)
+    } else {
+      if (current.length >= 5) return // Максимум 5 штук
+      updated = [...current, ticker]
+    }
+    updateUser({ pinnedTickers: updated })
+  }
+
   const logout = () => {
     localStorage.removeItem(STORAGE_KEY)
     setUser(null)
   }
 
-  return { user, loading, saveUser, updateUser, logout }
+  return { user, loading, saveUser, updateUser, togglePinTicker, logout }
 }

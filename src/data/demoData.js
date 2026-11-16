@@ -1,3 +1,4 @@
+// Генератор псевдо-случайного графика
 const genSeries = (points, base = 100, volatility = 2) => {
   const out = []
   let v = base
@@ -110,7 +111,13 @@ export const DEMO_STOCK_DATA = {
       ...p,
       date: `2026-${String(Math.floor(i / 30) + 1).padStart(2, '0')}-${String((i % 30) + 1).padStart(2, '0')}`,
     })),
-    position: { shares: 12, avgCost: 210.50, marketValue: 2979.60, todayReturn: -38.10, totalReturn: 453.60 }
+    position: { shares: 12, avgCost: 210.50, marketValue: 2979.60, todayReturn: -38.10, totalReturn: 453.60 },
+    trades: [
+      { date: '2026-01-15', type: 'buy', price: 210.50, shares: 5 },
+      { date: '2026-02-10', type: 'buy', price: 195.30, shares: 4 },
+      { date: '2026-03-05', type: 'sell', price: 240.10, shares: 2 },
+      { date: '2026-03-20', type: 'buy', price: 230.00, shares: 5 },
+    ]
   },
   AAPL: {
     ticker: 'AAPL',
@@ -149,7 +156,12 @@ export const DEMO_STOCK_DATA = {
       ...p,
       date: `2026-${String(Math.floor(i / 30) + 1).padStart(2, '0')}-${String((i % 30) + 1).padStart(2, '0')}`,
     })),
-    position: { shares: 42, avgCost: 195.20, marketValue: 9597.00, todayReturn: 171.36, totalReturn: 1398.60 }
+    position: { shares: 42, avgCost: 195.20, marketValue: 9597.00, todayReturn: 171.36, totalReturn: 1398.60 },
+    trades: [
+      { date: '2026-01-05', type: 'buy', price: 195.20, shares: 10 },
+      { date: '2026-02-18', type: 'buy', price: 205.40, shares: 15 },
+      { date: '2026-03-10', type: 'buy', price: 215.00, shares: 17 },
+    ]
   },
   NVDA: {
     ticker: 'NVDA',
@@ -188,7 +200,11 @@ export const DEMO_STOCK_DATA = {
       ...p,
       date: `2026-${String(Math.floor(i / 30) + 1).padStart(2, '0')}-${String((i % 30) + 1).padStart(2, '0')}`,
     })),
-    position: { shares: 15, avgCost: 112.40, marketValue: 2079.00, todayReturn: 68.70, totalReturn: 393.00 }
+    position: { shares: 15, avgCost: 112.40, marketValue: 2079.00, todayReturn: 68.70, totalReturn: 393.00 },
+    trades: [
+      { date: '2026-01-20', type: 'buy', price: 115.00, shares: 5 },
+      { date: '2026-02-15', type: 'buy', price: 108.50, shares: 10 },
+    ]
   },
   MSFT: {
     ticker: 'MSFT',
@@ -227,7 +243,11 @@ export const DEMO_STOCK_DATA = {
       ...p,
       date: `2026-${String(Math.floor(i / 30) + 1).padStart(2, '0')}-${String((i % 30) + 1).padStart(2, '0')}`,
     })),
-    position: { shares: 28, avgCost: 380.60, marketValue: 11561.20, todayReturn: 107.52, totalReturn: 904.40 }
+    position: { shares: 28, avgCost: 380.60, marketValue: 11561.20, todayReturn: 107.52, totalReturn: 904.40 },
+    trades: [
+      { date: '2026-01-08', type: 'buy', price: 380.60, shares: 10 },
+      { date: '2026-02-22', type: 'buy', price: 395.20, shares: 18 },
+    ]
   },
   GOOGL: {
     ticker: 'GOOGL',
@@ -266,7 +286,11 @@ export const DEMO_STOCK_DATA = {
       ...p,
       date: `2026-${String(Math.floor(i / 30) + 1).padStart(2, '0')}-${String((i % 30) + 1).padStart(2, '0')}`,
     })),
-    position: { shares: 55, avgCost: 145.30, marketValue: 9581.00, todayReturn: -58.85, totalReturn: 1589.50 }
+    position: { shares: 55, avgCost: 145.30, marketValue: 9581.00, todayReturn: -58.85, totalReturn: 1589.50 },
+    trades: [
+      { date: '2026-01-12', type: 'buy', price: 145.30, shares: 25 },
+      { date: '2026-03-01', type: 'buy', price: 155.00, shares: 30 },
+    ]
   }
 }
 
