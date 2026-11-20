@@ -1,4 +1,4 @@
-const GO_API_URL = 'http://localhost:8080/api'
+const GO_API_URL = import.meta.env.VITE_GO_API_URL || 'http://localhost:8080/api'
 
 // Запрос на оптимизацию портфеля
 export async function analyzePortfolio(tickers, prices) {

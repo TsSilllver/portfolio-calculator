@@ -7,6 +7,7 @@ import (
 	"math"
 	"math/rand"
 	"net/http"
+	"os"
 	"sync"
 	"time"
 )
@@ -173,7 +174,11 @@ func main() {
 	http.HandleFunc("/api/history", corsMiddleware(historyHandler))
 
 	fmt.Println("🚀 Go Backend Server started on http://localhost:8080")
-	if err := http.ListenAndServe(":8080", nil); err != nil {
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080" // fallback для локальной разработки
+	}
+	if err := http.ListenAndServe(":"+port, nil); err != nil {
 		log.Fatal(err)
 	}
 }
