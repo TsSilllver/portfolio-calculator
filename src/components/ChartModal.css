@@ -86,7 +86,6 @@
 .tool-btn.active { background: var(--accent-muted); border-color: var(--accent); color: var(--accent-hover); }
 .tool-btn.close:hover { border-color: var(--error); color: var(--error); }
 
-/* Выпадающее меню инструментов */
 .tools-dropdown-container { position: relative; }
 .tools-dropdown {
   position: absolute;
@@ -119,9 +118,9 @@
   flex: 1;
   display: flex;
   overflow: hidden;
+  min-height: 0;
 }
 
-/* Измененная зона графика */
 .chart-modal-chart-area {
   flex: 1;
   padding: 16px;
@@ -133,7 +132,6 @@
 .chart-with-drawing { position: relative; width: 100%; flex: 1; min-height: 0; }
 .chart-volume-area { width: 100%; flex-shrink: 0; }
 
-/* Панель торговли */
 .trade-panel {
   background: var(--bg-tertiary);
   border: 1px solid var(--border-subtle);
@@ -164,7 +162,6 @@
 .btn-trade.sell { background: var(--error); }
 .btn-trade:hover { opacity: 0.9; }
 
-/* Правая панель информации */
 .chart-modal-info {
   width: 320px;
   flex-shrink: 0;
@@ -191,8 +188,96 @@
 .cmi-row strong.pos { color: var(--success); }
 .cmi-row strong.neg { color: var(--error); }
 
+/* === МОБИЛЬНАЯ ВЕРСИЯ === */
 @media (max-width: 768px) {
-  .chart-modal-content { flex-direction: column; }
-  .chart-modal-info { width: 100%; border-left: none; border-top: 1px solid var(--border-subtle); max-height: 40vh; }
-  .chart-modal-chart-area { min-height: 300px; }
+  .chart-modal-overlay {
+    padding: 0;
+    align-items: flex-end;
+  }
+  
+  .chart-modal {
+    width: 100vw;
+    height: 100vh;
+    max-width: 100%;
+    border-radius: 0;
+  }
+  
+  .chart-modal-toolbar {
+    padding: 10px 12px;
+    gap: 8px;
+  }
+  
+  .chart-modal-header {
+    gap: 6px;
+  }
+  
+  .chart-modal-ticker {
+    font-size: 14px;
+  }
+  
+  .chart-modal-price {
+    font-size: 14px;
+  }
+  
+  .chart-modal-periods {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .period-btn {
+    padding: 4px 8px;
+    font-size: 10px;
+  }
+  
+  .chart-modal-content {
+    flex-direction: column;
+  }
+  
+  .chart-modal-chart-area {
+    flex: 1;
+    padding: 12px;
+    min-height: 60vh;
+  }
+  
+  .chart-with-drawing {
+    flex: 1;
+    min-height: 400px;
+  }
+  
+  .chart-volume-area {
+    height: 100px;
+  }
+  
+  .trade-panel {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  
+  .trade-inputs {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .trade-qty input {
+    width: 100%;
+  }
+  
+  .btn-trade {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .chart-modal-info {
+    width: 100%;
+    border-left: none;
+    border-top: 1px solid var(--border-subtle);
+    max-height: 35vh;
+    padding: 16px;
+  }
+  
+  .cmi-price {
+    font-size: 18px;
+  }
 }
