@@ -25,8 +25,7 @@ export default function ChartModal({ stock, onClose, onShowInfo, onTrade }) {
   const [showTools, setShowTools] = useState(false)
   const drawingRef = useRef(null)
   
-  // Стейты для покупки/продажи
-  const [tradeType, setTradeType] = useState('buy') // 'buy' | 'sell'
+  const [tradeType, setTradeType] = useState('buy')
   const [tradeQty, setTradeQty] = useState(1)
 
   const isPositive = stock.change >= 0
@@ -126,8 +125,8 @@ export default function ChartModal({ stock, onClose, onShowInfo, onTrade }) {
         <div className="chart-modal-content">
           <div className="chart-modal-chart-area">
             
-            {/* График цены */}
-            <div className="chart-with-drawing" style={{ height: '60%' }}>
+            {/* График цены: убраны жесткие %, теперь flex */}
+            <div className="chart-with-drawing">
               <ResponsiveContainer width="100%" height="100%">
                 <ComposedChart data={chartData} margin={{ top: 20, right: 0, left: 0, bottom: 0 }}>
                   <defs>
@@ -139,11 +138,8 @@ export default function ChartModal({ stock, onClose, onShowInfo, onTrade }) {
                   <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
                   <XAxis dataKey="date" tick={{ fill: '#71717a', fontSize: 11 }} tickLine={false} axisLine={false} tickFormatter={d => d?.slice(5) || ''} />
                   <YAxis yAxisId="price" tick={{ fill: '#71717a', fontSize: 11 }} tickLine={false} axisLine={false} tickFormatter={v => `$${v.toFixed(0)}`} domain={['auto', 'auto']} />
-                  
                   <Tooltip contentStyle={{ background: '#1f1f23', border: '1px solid #3f3f46', borderRadius: 8, color: '#fafafa', fontSize: 12 }} />
-                  
                   <Area yAxisId="price" type="monotone" dataKey="value" stroke={isPositive ? '#22c55e' : '#ef4444'} strokeWidth={2} fill="url(#modalStockGradient)" />
-
                   {stock.trades?.map((t, i) => {
                     const dateInChart = chartData.find(d => d.date === t.date)
                     if (!dateInChart) return null
@@ -156,8 +152,8 @@ export default function ChartModal({ stock, onClose, onShowInfo, onTrade }) {
               <DrawingOverlay ref={drawingRef} active={drawingActive} tool={tool} color={color} />
             </div>
 
-            {/* Объемы (отдельно внизу) */}
-            <div className="chart-volume-area" style={{ height: '15%', marginTop: '8px' }}>
+            {/* Объемы */}
+            <div className="chart-volume-area">
               <ResponsiveContainer width="100%" height="100%">
                 <ComposedChart data={chartData} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
                   <XAxis dataKey="date" hide />
