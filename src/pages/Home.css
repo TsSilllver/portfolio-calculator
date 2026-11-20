@@ -6,8 +6,8 @@
   padding: 0 16px;
 }
 
-/* Сайдбары по краям */
-.home-sidebar-left, .home-sidebar-right {
+/* Сайдбар справа (левый убрали) */
+.home-sidebar-right {
   width: 200px;
   flex-shrink: 0;
   padding-top: 16px;
@@ -21,6 +21,11 @@
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   overflow: hidden;
+}
+
+/* Оба виджета в сайдбаре держим примерно одного размера */
+.home-sidebar-right .mini-widget {
+  min-height: 168px;
 }
 
 .mini-widget-header {
@@ -46,9 +51,9 @@
 }
 .mini-widget-header button:hover { color: var(--accent); }
 
+/* Убрали жёсткую height:150px — теперь диаграмма не вылезает */
 .mini-chart-wrapper {
-  padding: 10px;
-  height: 150px;
+  padding: 8px;
 }
 
 .mini-history-list {
@@ -137,6 +142,6 @@
 .pinned-chip:hover { border-color: var(--accent); color: var(--accent-hover); }
 
 @media (max-width: 1200px) {
-  .home-sidebar-left, .home-sidebar-right { display: none; }
+  .home-sidebar-right { display: none; }
   .home-page-container { padding: 0; }
 }

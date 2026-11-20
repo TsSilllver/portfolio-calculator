@@ -22,7 +22,6 @@ export default function Home({ user, togglePinTicker, onTrade, onNavigate }) {
   const [showSearchDropdown, setShowSearchDropdown] = useState(false)
   const gridRef = useRef(null)
 
-  // Считаем количество виджетов для проверки лимита
   const totalWidgets = widgetsData.length;
 
   const handleAddTicker = (ticker) => {
@@ -113,27 +112,11 @@ export default function Home({ user, togglePinTicker, onTrade, onNavigate }) {
     }
   }).filter(Boolean)
 
-  // Данные для мини-виджетов по краям
   const pieData = DEMO_PORTFOLIO.tickers.map(t => ({ name: t, value: DEMO_PORTFOLIO.weights[t] }))
   
   return (
     <div className="home-page-container">
       
-      {/* Левый сайдбар с мини-виджетами */}
-      <div className="home-sidebar-left">
-         <div className="mini-widget">
-           <div className="mini-widget-header">
-             <span>Распределение</span>
-             <button onClick={() => onNavigate('dashboard')} title="Открыть обзор">
-               <PieIcon size={14} />
-             </button>
-           </div>
-           <div className="mini-chart-wrapper">
-              <PieChart data={pieData.slice(0, 3)} />
-           </div>
-         </div>
-      </div>
-
       {/* Центральная часть с сеткой */}
       <div className="home-main-content">
         <div className="home-topbar">
@@ -168,7 +151,8 @@ export default function Home({ user, togglePinTicker, onTrade, onNavigate }) {
               <button 
                 key={ticker} 
                 className="pinned-chip"
-                onClick={() => handleAddTicker(ticker)}
+                onClick={() => DEMO_STOCK_DATA[ticker] && setModalStock(DEMO_STOCK_DATA[ticker])}
+                title="Открыть карточку"
               >
                 <Pin size={12} /> {ticker}
               </button>
@@ -205,6 +189,18 @@ export default function Home({ user, togglePinTicker, onTrade, onNavigate }) {
                 <span className="mhi-name">GOOGL, AMZN</span>
                 <span className="mhi-val neg">-3.4%</span>
               </div>
+           </div>
+         </div>
+
+         <div className="mini-widget">
+           <div className="mini-widget-header">
+             <span>Распределение</span>
+             <button onClick={() => onNavigate('dashboard')} title="Открыть обзор">
+               <PieIcon size={14} />
+             </button>
+           </div>
+           <div className="mini-chart-wrapper">
+              <PieChart data={pieData.slice(0, 3)} compact />
            </div>
          </div>
       </div>

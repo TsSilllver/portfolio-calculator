@@ -44,7 +44,6 @@ export default function Dashboard({ portfolio, onEdit }) {
     }, 400)
   }
 
-  // Данные для графика рисков
   const riskData = goResult ? Object.entries(goResult.bestWeights).map(([ticker, weight]) => {
     const stock = DEMO_STOCK_DATA[ticker]
     return { name: ticker, weight: (weight * 100).toFixed(1), risk: stock.historicalVolatility }
@@ -103,10 +102,9 @@ export default function Dashboard({ portfolio, onEdit }) {
         {holdings.map(asset => <AssetRow key={asset.ticker} asset={asset} />)}
       </div>
 
-      {/* Блок анализа */}
+      {/* Блок анализа — заголовок СНАРУЖИ, над прямоугольником */}
+      <h2 className="section-title">Анализ портфеля</h2>
       <div className="analysis-section">
-        <div className="analysis-divider"><span>Анализ портфеля</span></div>
-
         {!isAnalyzing && !goResult && (
           <div className="analysis-start">
             <div className="analysis-icon"><Cpu size={32} /></div>
@@ -131,8 +129,7 @@ export default function Dashboard({ portfolio, onEdit }) {
               <CheckCircle size={20} color="var(--success)" />
               <h3>Анализ завершен!</h3>
             </div>
-            
-            {/* Новые графики для анализа */}
+
             <div className="analysis-charts-grid">
               <div className="analysis-chart-card">
                 <h4>Оптимальное распределение</h4>

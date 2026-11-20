@@ -83,40 +83,36 @@ export default function Setup({ portfolio, onChange, onBack, onTrade }) {
         </div>
       </div>
 
-      {/* Мои активы */}
-      <div className="my-assets-section">
-         <div className="section-divider"><span><Briefcase size={14} /> Мои активы</span></div>
-         <div className="card" style={{ paddingTop: '24px' }}>
-           <div className="assets-header">
-             <span>Актив</span><span></span><span>Кол-во</span><span>Ср. цена</span><span>Стоимость</span>
-           </div>
-           {portfolio.holdings.map(h => {
-             const stockData = DEMO_STOCK_DATA[h.ticker] || h
-             const currentPrice = stockData.price || h.price
-             const value = h.shares * currentPrice
-             return (
-               <div key={h.ticker} className="asset-row" style={{ cursor: 'pointer' }} onClick={() => setModalStock(stockData)}>
-                 <div className="asset-main">
-                   <div className="asset-ticker">{h.ticker}</div>
-                   <div className="asset-name">{h.name}</div>
-                 </div>
-                 <div className="asset-spark">
-                   <Sparkline data={h.sparkline || []} />
-                 </div>
-                 <div className="asset-price">{h.shares}</div>
-                 <div className="asset-price">${h.avgCost || '—'}</div>
-                 <div className="asset-price">${value.toFixed(2)}</div>
-               </div>
-             )
-           })}
-           {portfolio.holdings.length === 0 && (
-             <div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-tertiary)' }}>
-               У вас пока нет активов. Купите акции во всплывающем окне на главной!
-             </div>
-           )}
-         </div>
+      {/* Мои активы — заголовок СНАРУЖИ, над прямоугольником */}
+      <h2 className="section-title"><Briefcase size={15} /> Мои активы</h2>
+      <div className="card">
+        <div className="assets-header">
+          <span>Актив</span><span></span><span>Кол-во</span><span>Ср. цена</span><span>Стоимость</span>
+        </div>
+        {portfolio.holdings.map(h => {
+          const stockData = DEMO_STOCK_DATA[h.ticker] || h
+          const currentPrice = stockData.price || h.price
+          const value = h.shares * currentPrice
+          return (
+            <div key={h.ticker} className="asset-row" style={{ cursor: 'pointer' }} onClick={() => setModalStock(stockData)}>
+              <div className="asset-main">
+                <div className="asset-ticker">{h.ticker}</div>
+                <div className="asset-name">{h.name}</div>
+              </div>
+              <div className="asset-spark"><Sparkline data={h.sparkline || []} /></div>
+              <div className="asset-price">{h.shares}</div>
+              <div className="asset-price">${h.avgCost || '—'}</div>
+              <div className="asset-price">${value.toFixed(2)}</div>
+            </div>
+          )
+        })}
+        {portfolio.holdings.length === 0 && (
+          <div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-tertiary)' }}>
+            У вас пока нет активов. Купите акции во всплывающем окне на главной!
+          </div>
+        )}
       </div>
-      
+
       {modalStock && (
         <ChartModal stock={modalStock} onClose={() => setModalStock(null)} onShowInfo={() => {}} onTrade={onTrade} />
       )}
