@@ -28,7 +28,6 @@ function findFreeSlot(layout, cols, rows) {
 const TerminalGrid = forwardRef(({ widgets, onRemoveWidget }, ref) => {
   const [gridConfig, setGridConfig] = useState({ cols: 3, rows: 2 })
   
-  // Автоматическое переключение на 6 в столбик на мобильных
   useEffect(() => {
     const updateConfig = () => {
       if (window.innerWidth < 768) {
@@ -157,7 +156,7 @@ const TerminalGrid = forwardRef(({ widgets, onRemoveWidget }, ref) => {
     return () => { document.removeEventListener('mousemove', move); document.removeEventListener('mouseup', up) }
   }, [draggedId, dropTarget, layout, gridConfig])
 
-  // ---------- RESIZE (Математически точная модель для всех 8 направлений) ----------
+  // ---------- RESIZE (Исправленная логика для всех направлений) ----------
   useEffect(() => {
     if (!resizingId) return
     const move = (e) => {
@@ -176,29 +175,41 @@ const TerminalGrid = forwardRef(({ widgets, onRemoveWidget }, ref) => {
 
         // Вправо
         if (start.corner.includes('right')) {
-          const maxRight = gridConfig.cols - start.startX - start.startW
-          const shift = Math.max(0, Math.min(colDelta, maxRight))
-          w = start.startW + shift
+          w = Math.max(1, Math.min(gridConfig.cols - x, start.startW + colDelta))
         }
         // Влево
         if (start.corner.includes('left')) {
-          const maxLeft = start.startW - 1
-          const shift = Math.min(0, Math.max(colDelta, -maxLeft))
-          x = Math.max(0, start.startX + shift)
-          w = start.startW - (x - start.startX)
+          let newX = start.startX + colDelta
+          let newW = start.startW + (start.startX - newX)
+          if (newX < 0) {
+            newW += newX
+            newX = 0
+          }
+          if (newX + newW > gridConfig.cols) {
+            newW = gridConfig.cols - newX
+          }
+          if (newW < 1) newW = 1
+          x = newX
+          w = newW
         }
         // Вниз
         if (start.corner.includes('bottom')) {
-          const maxBottom = gridConfig.rows - start.startY - start.startH
-          const shift = Math.max(0, Math.min(rowDelta, maxBottom))
-          h = start.startH + shift
+          h = Math.max(1, Math.min(gridConfig.rows - y, start.startH + rowDelta))
         }
         // Вверх
         if (start.corner.includes('top')) {
-          const maxTop = start.startH - 1
-          const shift = Math.min(0, Math.max(rowDelta, -maxTop))
-          y = Math.max(0, start.startY + shift)
-          h = start.startH - (y - start.startY)
+          let newY = start.startY + rowDelta
+          let newH = start.startH + (start.startY - newY)
+          if (newY < 0) {
+            newH += newY
+            newY = 0
+          }
+          if (newY + newH > gridConfig.rows) {
+            newH = gridConfig.rows - newY
+          }
+          if (newH < 1) newH = 1
+          y = newY
+          h = newH
         }
 
         const nr = { x, y, w, h }
