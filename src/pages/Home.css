@@ -1,8 +1,80 @@
-.home-page {
+.home-page-container {
+  display: flex;
+  gap: 16px;
+  height: calc(100vh - 60px);
+  max-width: 100%;
+  padding: 0 16px;
+}
+
+/* Сайдбары по краям */
+.home-sidebar-left, .home-sidebar-right {
+  width: 200px;
+  flex-shrink: 0;
+  padding-top: 16px;
   display: flex;
   flex-direction: column;
-  height: 100%;
   gap: 16px;
+}
+
+.mini-widget {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.mini-widget-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+}
+
+.mini-widget-header button {
+  background: transparent;
+  border: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+.mini-widget-header button:hover { color: var(--accent); }
+
+.mini-chart-wrapper {
+  padding: 10px;
+  height: 150px;
+}
+
+.mini-history-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.mini-history-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 12px;
+}
+.mini-history-item:last-child { border-bottom: none; }
+.mhi-name { color: var(--text-primary); font-family: var(--font-mono); }
+.mhi-val { font-weight: 600; }
+.mhi-val.pos { color: var(--success); }
+.mhi-val.neg { color: var(--error); }
+
+/* Основная зона */
+.home-main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0; /* Важно, чтобы flex-child не раздувался */
 }
 
 .home-topbar {
@@ -10,6 +82,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 16px;
+  padding-top: 16px;
   flex-wrap: wrap;
 }
 
@@ -28,15 +101,8 @@
   border-radius: var(--radius-lg);
   padding: 8px 14px;
 }
-
-.home-search input {
-  flex: 1;
-  background: transparent;
-  border: none;
-  color: var(--text-primary);
-  font-size: 13px;
-  outline: none;
-}
+.home-search input { flex: 1; background: transparent; border: none; color: var(--text-primary); font-size: 13px; outline: none; }
+.search-icon { color: var(--text-tertiary); flex-shrink: 0; }
 
 .search-dropdown {
   position: absolute;
@@ -47,89 +113,30 @@
   background: var(--bg-secondary);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-md);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
   z-index: 50;
   overflow: hidden;
 }
-
 .search-dropdown button {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  padding: 10px 14px;
-  background: transparent;
-  border: none;
-  color: var(--text-primary);
-  cursor: pointer;
-  transition: background 0.15s ease;
+  display: flex; align-items: center; justify-content: space-between;
+  width: 100%; padding: 10px 14px; background: transparent; border: none; color: var(--text-primary); cursor: pointer;
 }
-
 .search-dropdown button:hover { background: var(--bg-tertiary); }
 .sd-ticker { font-family: var(--font-mono); font-weight: 600; }
 .sd-name { font-size: 12px; color: var(--text-tertiary); flex: 1; text-align: left; margin-left: 12px; }
+.sd-add-btn { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--accent); background: var(--accent-muted); padding: 4px 8px; border-radius: var(--radius-sm); margin-left: 8px; }
 
-.pinned-tickers {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
+.pinned-tickers { display: flex; gap: 8px; flex-wrap: wrap; }
 .pinned-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-default);
-  color: var(--text-secondary);
-  padding: 6px 12px;
-  border-radius: 999px;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  font-weight: 500;
-  transition: all 0.2s ease;
-}
-
-.pinned-chip:hover {
-  border-color: var(--accent);
-  color: var(--accent-hover);
-}
-
-.pinned-chip.opened {
-  background: var(--accent-muted);
-  border-color: var(--accent);
-  color: var(--accent-hover);
-}
-
-/* ... остальное ... */
-
-.search-dropdown button {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  padding: 10px 14px;
-  background: transparent;
-  border: none;
-  color: var(--text-primary);
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--bg-secondary); border: 1px solid var(--border-default);
+  color: var(--text-secondary); padding: 6px 12px; border-radius: 999px;
+  font-family: var(--font-mono); font-size: 12px; font-weight: 500; transition: all 0.2s;
   cursor: pointer;
-  transition: background 0.15s ease;
 }
+.pinned-chip:hover { border-color: var(--accent); color: var(--accent-hover); }
 
-.search-dropdown button:hover { background: var(--bg-tertiary); }
-
-.sd-ticker { font-family: var(--font-mono); font-weight: 600; }
-.sd-name { font-size: 12px; color: var(--text-tertiary); flex: 1; text-align: left; margin-left: 12px; }
-
-/* Кнопка "Добавить на экран" в выпадающем списке */
-.sd-add-btn {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 11px;
-  color: var(--accent);
-  background: var(--accent-muted);
-  padding: 4px 8px;
-  border-radius: var(--radius-sm);
-  margin-left: 8px;
+@media (max-width: 1200px) {
+  .home-sidebar-left, .home-sidebar-right { display: none; }
+  .home-page-container { padding: 0; }
 }

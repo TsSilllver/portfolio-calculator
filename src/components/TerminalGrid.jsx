@@ -16,11 +16,11 @@ const TerminalGrid = forwardRef(({ widgets, onRemoveWidget }, ref) => {
 
   const [draggedId, setDraggedId] = useState(null)
   const [resizingId, setResizingId] = useState(null)
+  const [dropTarget, setDropTarget] = useState(null) // Для подсветки пустой ячейки
   const resizeStartRef = useRef(null)
   const gridRef = useRef(null)
   const pendingRemovalsRef = useRef([])
 
-  // Пробрасываем layout наружу, чтобы Home мог узнать позиции окон
   useImperativeHandle(ref, () => layout)
 
   useEffect(() => {
@@ -44,15 +44,12 @@ const TerminalGrid = forwardRef(({ widgets, onRemoveWidget }, ref) => {
     })
   }, [widgets])
 
-  const isOverlap = (r1, r2) => {
-    return (
-      r1.x < r2.x + r2.w &&
-      r1.x + r1.w > r2.x &&
-      r1.y < r2.y + r2.h &&
-      r1.y + r1.h > r2.y
-    )
-  }
+  const isOverlap = (r1, r2) => (
+    r1.x < r2.x + r2.w && r1.x + r1.w > r2.x &&
+    r1.y < r2.y + r2.h && r1.y + r1.h > r2.y
+  )
 
+  // --- РЕСАЙЗ ---
   useEffect(() => {
     if (!resizingId) return
 
@@ -78,9 +75,7 @@ const TerminalGrid = forwardRef(({ widgets, onRemoveWidget }, ref) => {
         let newW = start.startW
         let newH = start.startH
 
-        if (start.corner.includes('right')) {
-          newW = Math.max(1, Math.min(COLS - newX, start.startW + colDelta))
-        }
+        if (start.corner.includes('right')) newW = Math.max(1, Math.min(COLS - newX, start.startW + colDelta))
         if (start.corner.includes('left')) {
           const deltaW = start.startW - colDelta
           if (deltaW >= 1 && newX + (start.startW - deltaW) >= 0) {
@@ -88,9 +83,7 @@ const TerminalGrid = forwardRef(({ widgets, onRemoveWidget }, ref) => {
             newW = deltaW
           }
         }
-        if (start.corner.includes('bottom')) {
-          newH = Math.max(1, Math.min(ROWS - newY, start.startH + rowDelta))
-        }
+        if (start.corner.includes('bottom')) newH = Math.max(1, Math.min(ROWS - newY, start.startH + rowDelta))
         if (start.corner.includes('top')) {
           const deltaH = start.startH - rowDelta
           if (deltaH >= 1 && newY + (start.startH - deltaH) >= 0) {
@@ -100,13 +93,9 @@ const TerminalGrid = forwardRef(({ widgets, onRemoveWidget }, ref) => {
         }
 
         const newRect = { x: newX, y: newY, w: newW, h: newH }
-
-        // Запоминаем перекрытые окна, но НЕ удаляем
         const overlaps = []
         Object.keys(prev).forEach(id => {
-          if (id !== resizingId && isOverlap(newRect, prev[id])) {
-            overlaps.push(id)
-          }
+          if (id !== resizingId && isOverlap(newRect, prev[id])) overlaps.push(id)
         })
         pendingRemovalsRef.current = overlaps
 
@@ -115,7 +104,6 @@ const TerminalGrid = forwardRef(({ widgets, onRemoveWidget }, ref) => {
     }
 
     const handleMouseUp = () => {
-      // Удаляем только при отпускании мыши
       if (pendingRemovalsRef.current.length > 0) {
         pendingRemovalsRef.current.forEach(id => onRemoveWidget(id))
         pendingRemovalsRef.current = []
@@ -139,39 +127,112 @@ const TerminalGrid = forwardRef(({ widgets, onRemoveWidget }, ref) => {
     const current = layout[id]
     if (!current) return
     resizeStartRef.current = {
-      mouseX: e.clientX,
-      mouseY: e.clientY,
-      startX: current.x,
-      startY: current.y,
-      startW: current.w,
-      startH: current.h,
-      corner
+      mouseX: e.clientX, mouseY: e.clientY,
+      startX: current.x, startY: current.y,
+      startW: current.w, startH: current.h, corner
     }
   }
 
+  // --- DRAG & DROP ---
   const handleDragStart = (e, id) => {
     setDraggedId(id)
     e.dataTransfer.effectAllowed = 'move'
+    // Прячем стандартный образ для перетаскивания, чтобы красиво работало
+    const img = new Image(); img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'; // прозрачный 1x1
+    e.dataTransfer.setDragImage(img, 0, 0)
   }
-  const handleDragOver = (e) => e.preventDefault()
-  
+
+  const handleDragOver = (e) => {
+    e.preventDefault()
+    if (!draggedId || !gridRef.current) return
+
+    // Вычисляем ячейку под мышью
+    const rect = gridRef.current.getBoundingClientRect()
+    const x = e.clientX - rect.left
+    const y = e.clientY - rect.top
+    
+    const cellWidth = rect.width / COLS
+    const cellHeight = rect.height / ROWS
+
+    const col = Math.floor(x / cellWidth)
+    const row = Math.floor(y / cellHeight)
+
+    if (col >= 0 && col < COLS && row >= 0 && row < ROWS) {
+      // Проверяем, свободно ли место (учитываем ширину самого окна)
+      const currentWidget = layout[draggedId]
+      if (!currentWidget) return
+      
+      const targetX = Math.min(col, COLS - currentWidget.w)
+      const targetY = Math.min(row, ROWS - currentWidget.h)
+      
+      const targetRect = { x: targetX, y: targetY, w: currentWidget.w, h: currentWidget.h }
+      
+      // Проверяем, не пересекается ли с другими (кроме самого себя)
+      let occupied = false
+      Object.keys(layout).forEach(id => {
+        if (id !== draggedId && isOverlap(targetRect, layout[id])) {
+          occupied = true
+        }
+      })
+
+      // Если свободно - подсвечиваем
+      if (!occupied) {
+        setDropTarget(targetRect)
+      } else {
+        setDropTarget(null)
+      }
+    }
+  }
+
+  const handleDragLeave = () => {
+    setDropTarget(null)
+  }
+
   const handleDrop = (e, targetId) => {
     e.preventDefault()
     if (!draggedId || draggedId === targetId) return
 
-    setLayout(prev => {
-      const newLayout = { ...prev }
-      if (!newLayout[draggedId] || !newLayout[targetId]) return prev;
-      const temp = newLayout[draggedId]
-      newLayout[draggedId] = newLayout[targetId]
-      newLayout[targetId] = temp
-      return newLayout
-    })
+    if (dropTarget) {
+      // Перемещение в пустую ячейку
+      setLayout(prev => {
+        const newLayout = { ...prev }
+        newLayout[draggedId] = { ...newLayout[draggedId], x: dropTarget.x, y: dropTarget.y }
+        return newLayout
+      })
+    } else {
+      // Обмен местами, если попали в другое окно
+      setLayout(prev => {
+        const newLayout = { ...prev }
+        if (!newLayout[draggedId] || !newLayout[targetId]) return prev
+        const temp = newLayout[draggedId]
+        newLayout[draggedId] = newLayout[targetId]
+        newLayout[targetId] = temp
+        return newLayout
+      })
+    }
     setDraggedId(null)
+    setDropTarget(null)
   }
 
   return (
-    <div className="terminal-grid" ref={gridRef}>
+    <div 
+      className="terminal-grid" 
+      ref={gridRef}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={(e) => handleDrop(e, null)}
+    >
+      {/* Подсветка пустой ячейки */}
+      {dropTarget && (
+        <div 
+          className="drop-target-overlay"
+          style={{
+            gridColumn: `${dropTarget.x + 1} / span ${dropTarget.w}`,
+            gridRow: `${dropTarget.y + 1} / span ${dropTarget.h}`,
+          }}
+        />
+      )}
+
       {widgets.map(widget => {
         const pos = layout[widget.id]
         if (!pos) return null 
@@ -190,7 +251,6 @@ const TerminalGrid = forwardRef(({ widgets, onRemoveWidget }, ref) => {
               className="terminal-header"
               draggable
               onDragStart={(e) => handleDragStart(e, widget.id)}
-              onDragOver={handleDragOver}
               onDrop={(e) => handleDrop(e, widget.id)}
             >
               <div className="terminal-header-left">

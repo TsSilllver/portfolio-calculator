@@ -1,12 +1,23 @@
 .terminal-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: repeat(2, 1fr);
+  grid-template-rows: repeat(2, minmax(350px, 450px)); 
+  justify-content: center;
+  align-content: start;
   gap: 12px;
   width: 100%;
-  height: calc(100vh - 100px);
+  min-height: calc(100vh - 100px);
   padding: 16px;
-  /* Строгая фиксация */
+  position: relative;
+}
+
+/* Подсветка пустой ячейки при перетаскивании */
+.drop-target-overlay {
+  background: rgba(99, 102, 241, 0.1);
+  border: 2px dashed var(--accent);
+  border-radius: var(--radius-lg);
+  pointer-events: none;
+  z-index: 0;
 }
 
 .terminal-cell {
@@ -18,21 +29,37 @@
   flex-direction: column;
   overflow: hidden;
   transition: border-color 0.2s ease;
+  height: 100%;
 }
 
 .terminal-cell.dragging { opacity: 0.5; border: 2px dashed var(--accent); }
+.terminal-cell.resizing { z-index: 50; border-color: var(--accent); }
 
 .terminal-header {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 8px 12px; background: var(--bg-tertiary);
-  border-bottom: 1px solid var(--border-subtle); cursor: grab; user-select: none;
+  display: flex; 
+  align-items: center; 
+  justify-content: space-between;
+  padding: 8px 12px; 
+  background: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border-subtle); 
+  cursor: grab; 
+  user-select: none;
 }
+
 .terminal-header:active { cursor: grabbing; }
 .terminal-header-left { display: flex; align-items: center; gap: 8px; }
 .drag-handle { color: var(--text-tertiary); }
 .terminal-title { font-size: 12px; font-weight: 600; color: var(--text-secondary); }
 
-.close-btn { background: transparent; border: none; color: var(--text-tertiary); cursor: pointer; padding: 4px; border-radius: 4px; display: flex; }
+.close-btn { 
+  background: transparent; 
+  border: none; 
+  color: var(--text-tertiary); 
+  cursor: pointer; 
+  padding: 4px; 
+  border-radius: 4px; 
+  display: flex; 
+}
 .close-btn:hover { color: var(--error); background: var(--error-muted); }
 
 .terminal-body { flex: 1; min-height: 0; display: flex; flex-direction: column; }

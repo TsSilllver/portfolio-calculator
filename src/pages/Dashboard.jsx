@@ -1,52 +1,68 @@
-import { useMemo } from 'react'
-import {
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, BarChart, Bar
-} from 'recharts'
-import {
-  ArrowUpRight, Edit3, Eye, Download
-} from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Cell, PieChart as RePieChart, Pie } from 'recharts'
+import { ArrowUpRight, Edit3, Cpu, Play, CheckCircle } from 'lucide-react'
 import MetricCard from '../components/MetricCard'
 import PieChart from '../components/PieChart'
 import AssetRow from '../components/AssetRow'
-import { DEMO_MAIN_CHART } from '../data/demoData'
+import { DEMO_MAIN_CHART, DEMO_STOCK_DATA } from '../data/demoData'
+import { analyzePortfolio, saveToHistory } from '../utils/goApi'
 import './Dashboard.css'
+
+const COLORS = ['#6366f1', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899']
 
 export default function Dashboard({ portfolio, onEdit }) {
   const { holdings, metrics, tickers, weights } = portfolio
+  const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const [progress, setProgress] = useState(0)
+  const [goResult, setGoResult] = useState(null)
 
-  const pieData = useMemo(
-    () => tickers.map(t => ({ name: t, value: weights[t] })),
-    [tickers, weights]
-  )
-
+  const pieData = useMemo(() => tickers.map(t => ({ name: t, value: weights[t] })), [tickers, weights])
   const chartData = DEMO_MAIN_CHART
+
+  const handleAnalyze = async () => {
+    setIsAnalyzing(true)
+    setProgress(0)
+    setGoResult(null)
+
+    const interval = setInterval(() => {
+      setProgress(prev => (prev >= 90 ? prev : prev + 15))
+    }, 100)
+
+    const pricesMap = {}
+    tickers.forEach(t => {
+      pricesMap[t] = DEMO_STOCK_DATA[t].chartData.map(p => p.value)
+    })
+
+    const result = await analyzePortfolio(tickers, pricesMap)
+    clearInterval(interval)
+    setProgress(100)
+
+    setTimeout(() => {
+      setGoResult(result)
+      setIsAnalyzing(false)
+      if (result) saveToHistory({ tickers, bestSharpe: result.bestSharpe, bestWeights: result.bestWeights })
+    }, 400)
+  }
+
+  // Данные для графика рисков
+  const riskData = goResult ? Object.entries(goResult.bestWeights).map(([ticker, weight]) => {
+    const stock = DEMO_STOCK_DATA[ticker]
+    return { name: ticker, weight: (weight * 100).toFixed(1), risk: stock.historicalVolatility }
+  }) : []
 
   return (
     <div className="dashboard-page">
-      {/* === Верхняя полоса === */}
       <div className="dashboard-topbar">
         <div>
           <div className="topbar-label">Общая стоимость портфеля</div>
-          <div className="topbar-value">
-            ${metrics.totalValue.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-          </div>
-          <div className="topbar-change positive">
-            <ArrowUpRight size={14} />
-            +${metrics.dayChange.toFixed(2)} ({metrics.dayChangePct}%) за сегодня
-          </div>
+          <div className="topbar-value">${metrics.totalValue.toLocaleString('en-US', { minimumFractionDigits: 2 })}</div>
+          <div className="topbar-change positive"><ArrowUpRight size={14} />+${metrics.dayChange.toFixed(2)} ({metrics.dayChangePct}%) за сегодня</div>
         </div>
         <div className="topbar-actions">
-          <button className="btn-secondary" onClick={onEdit}>
-            <Edit3 size={15} /> Редактировать
-          </button>
-          <button className="btn-primary" onClick={onEdit}>
-            <Eye size={15} /> Новый расчёт
-          </button>
+          <button className="btn-secondary" onClick={onEdit}><Edit3 size={15} /> Редактировать</button>
         </div>
       </div>
 
-      {/* === Метрики === */}
       <div className="metrics-grid">
         <MetricCard label="Доходность (YTD)" value={`+${metrics.totalReturn}%`} positive />
         <MetricCard label="Риск (волатильность)" value={`${metrics.risk}%`} positive={false} />
@@ -54,16 +70,9 @@ export default function Dashboard({ portfolio, onEdit }) {
         <MetricCard label="Бета (к S&P 500)" value={metrics.beta.toFixed(2)} positive />
       </div>
 
-      {/* === Основной график + круговая === */}
       <div className="dashboard-grid-main">
         <div className="card chart-large">
-          <div className="card-header">
-            <h3 className="card-title">Динамика портфеля</h3>
-            <div className="card-badges">
-              <span className="badge success">1Y +28.4%</span>
-              <span className="badge neutral">Объём</span>
-            </div>
-          </div>
+          <div className="card-header"><h3 className="card-title">Динамика портфеля</h3></div>
           <ResponsiveContainer width="100%" height={280}>
             <AreaChart data={chartData} margin={{ top: 10, right: 8, left: -12, bottom: 0 }}>
               <defs>
@@ -80,45 +89,92 @@ export default function Dashboard({ portfolio, onEdit }) {
             </AreaChart>
           </ResponsiveContainer>
         </div>
-
         <div className="card chart-pie">
-          <div className="card-header">
-            <h3 className="card-title">Распределение</h3>
-          </div>
+          <div className="card-header"><h3 className="card-title">Распределение</h3></div>
           <PieChart data={pieData} />
         </div>
       </div>
 
-      {/* === Объёмы === */}
       <div className="card">
-        <div className="card-header">
-          <h3 className="card-title">Объёмы торгов</h3>
-          <span className="badge neutral">24h</span>
+        <div className="card-header"><h3 className="card-title">Активы портфеля</h3></div>
+        <div className="assets-header">
+          <span>Актив</span><span></span><span>Цена</span><span>Изм.</span><span>Доля</span>
         </div>
-        <ResponsiveContainer width="100%" height={120}>
-          <BarChart data={chartData.slice(-30)} margin={{ top: 8, right: 0, left: 0, bottom: 0 }}>
-            <Bar dataKey="volume" fill="#3f3f46" radius={[2, 2, 0, 0]} />
-            <Tooltip contentStyle={{ background: '#1f1f23', border: '1px solid #3f3f46', borderRadius: 8, color: '#fafafa', fontSize: 12 }} formatter={(v) => [v.toLocaleString(), 'Объём']} />
-          </BarChart>
-        </ResponsiveContainer>
+        {holdings.map(asset => <AssetRow key={asset.ticker} asset={asset} />)}
       </div>
 
-      {/* === Таблица активов === */}
-      <div className="card">
-        <div className="card-header">
-          <h3 className="card-title">Активы портфеля</h3>
-          <span className="badge neutral">{holdings.length} позиций</span>
-        </div>
-        <div className="assets-header">
-          <span>Актив</span>
-          <span></span>
-          <span>Цена</span>
-          <span>Изм.</span>
-          <span>Доля</span>
-        </div>
-        {holdings.map(asset => (
-          <AssetRow key={asset.ticker} asset={asset} />
-        ))}
+      {/* Блок анализа */}
+      <div className="analysis-section">
+        <div className="analysis-divider"><span>Анализ портфеля</span></div>
+
+        {!isAnalyzing && !goResult && (
+          <div className="analysis-start">
+            <div className="analysis-icon"><Cpu size={32} /></div>
+            <h3>Оптимизация весов</h3>
+            <p>Наш алгоритм проанализирует {tickers.length} активов и найдет баланс с лучшим соотношением риска и доходности.</p>
+            <button className="btn-primary btn-large" onClick={handleAnalyze}><Play size={16} /> Запустить анализ</button>
+          </div>
+        )}
+
+        {isAnalyzing && (
+          <div className="analysis-loading">
+            <h3>Считаем оптимальные веса...</h3>
+            <div className="progress-bar-bg"><div className="progress-bar-fill" style={{ width: `${progress}%` }} /></div>
+            <span className="progress-text">{progress}%</span>
+            <p className="loading-subtext">Сервер обрабатывает данные...</p>
+          </div>
+        )}
+
+        {goResult && !isAnalyzing && (
+          <div className="analysis-result">
+            <div className="result-header">
+              <CheckCircle size={20} color="var(--success)" />
+              <h3>Анализ завершен!</h3>
+            </div>
+            
+            {/* Новые графики для анализа */}
+            <div className="analysis-charts-grid">
+              <div className="analysis-chart-card">
+                <h4>Оптимальное распределение</h4>
+                <ResponsiveContainer width="100%" height={200}>
+                  <RePieChart>
+                    <Pie data={Object.entries(goResult.bestWeights).map(([name, val]) => ({ name, value: val * 100 }))} dataKey="value" nameKey="name" innerRadius={50} outerRadius={80}>
+                      {Object.keys(goResult.bestWeights).map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                    </Pie>
+                    <Tooltip formatter={(val) => `${val.toFixed(1)}%`} />
+                  </RePieChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="analysis-chart-card">
+                <h4>Уровень риска (Волатильность)</h4>
+                <ResponsiveContainer width="100%" height={200}>
+                  <BarChart data={riskData}>
+                    <XAxis dataKey="name" tick={{ fill: '#71717a', fontSize: 10 }} />
+                    <YAxis tick={{ fill: '#71717a', fontSize: 10 }} />
+                    <Tooltip formatter={(val) => `${val}%`} />
+                    <Bar dataKey="risk" fill="#ef4444" radius={[4, 4, 0, 0]}>
+                      {riskData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            <div className="go-result-grid" style={{ marginTop: '20px' }}>
+              <div className="go-metric main-metric">
+                <span>Лучший коэффициент Шарпа</span>
+                <strong>{goResult.bestSharpe}</strong>
+              </div>
+              {Object.entries(goResult.bestWeights).map(([t, w]) => (
+                <div className="go-metric" key={t}>
+                  <span>Доля {t}</span>
+                  <strong>{(w * 100).toFixed(1)}%</strong>
+                </div>
+              ))}
+            </div>
+            <button className="btn-secondary" style={{ marginTop: '16px' }} onClick={() => setGoResult(null)}>Запустить заново</button>
+          </div>
+        )}
       </div>
     </div>
   )
